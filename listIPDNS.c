@@ -6,11 +6,10 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define MAX 128
 
 /* Function prototypes */
-bool isValidIP(char *);
-bool isValidMask(char *);
+bool isValidIP(const char *);
+bool isValidMask(const char *);
 void dotted_decimal();
 
 int main (int argc, char *argv[])
@@ -21,31 +20,32 @@ int main (int argc, char *argv[])
     if(argc != 3)
     {
         printf("Usage: %s Subnet_Mask Network_Address\n", argv[0]);
-        return -1;
+        exit(1);
     }
 
-    //Validate the Subnet mask address
-    else if (isValidMask(argv[1]) == 0)
+    printf("Test.. Mask: %d",isValidMask(argv[1]));
+    int validMask = isValidMask(argv[1]);
+    int validIP = isValidIP(argv[2]);
+    printf("MASK: %d IP: %d\n", validMask, validIP);
+/*
+    if(validMask == 0 && validIP == 0)
     {
-        printf("Invalid Subnet Mask\n");
+        fprintf(stderr, "Invalid subnet mask and IP\n");
         return -1;
     }
-
-    //Validate the Network/IP address
-    else if (isValidIP(argv[2]) == 0)
+    else if(validMask == 0 && validIP == 1)
     {
-        printf("Invalid IP address\n");
+        fprintf(stderr, "Invalid subnet mask\n");
         return -1;
     }
-
-    else if (isValidMask(argv[1]) == 0 && isValidIP(argv[2]) == 0)
+    else if(validMask == 1 && validIP == 0)
     {
-        printf("Invalid Subnet mask and IP address\n");
+        fprintf(stderr, "Invalid IP\n");
         return -1;
     }
     else
-        printf("Valid Input\n");
-
+        printf("Valid Input... MASK: %d IP: %d\n", validMask, validIP);  */
+    printf("MASK: %d IP: %d\n", validMask, validIP);
     return 0;
 }
 
@@ -53,7 +53,7 @@ int main (int argc, char *argv[])
 /*  Convert the IP address to a decimal format "ddd.ddd.ddd.ddd"
     which checks if the "ddd" is between 0-255
 */
-bool isValidIP(char *ipAddr)
+bool isValidIP(const char *ipAddr)
 {
     struct sockaddr_in sin;
     int ans = inet_pton(AF_INET, ipAddr, &(sin.sin_addr));
@@ -68,20 +68,21 @@ bool isValidIP(char *ipAddr)
     Return 1 if found
     else return 0
 */
-bool isValidMask(char *pt2mask)
+bool isValidMask(const char *ptr2mask)
 {
-    unsigned long net_mask, mask, subnet_mask, i;
-    unsigned int ans = 0;
+    unsigned long net_mask, mask, subnet_mask;
+    unsigned int i, ans = 0;
     struct in_addr netmask;
-    subnet_mask = inet_addr(pt2mask);       //Convert dotted decimal subnet mask to network byte
-    mask = inet_aton(pt2mask, &netmask);
+    subnet_mask = inet_addr(ptr2mask);       //Convert dotted decimal subnet mask to network byte
+    mask = inet_aton(ptr2mask, &netmask);
     net_mask = ntohl(netmask.s_addr);       //Network byte to long Host byte order
     printf("HEX: %x\n", net_mask );
     printf("Subnet mask in host byte/decimal: %lu\n", net_mask);
+    printf("Before for loop\n");
 
     for(i = -1; i > 0; i--)
     {
-        if(-(i & -i) == i && mask == i)
+        if(-(i & -i) == i && net_mask == i)
         {
             ans = 1;
             break;
