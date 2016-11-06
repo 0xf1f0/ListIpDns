@@ -10,11 +10,15 @@
 /* Function prototypes */
 bool isValidIP(const char *);
 bool isValidMask(const char *);
-void dotted_decimal();
+const char *networkAddr(unsigned long, unsigned long);
+const char *broadcastAddr(unsigned long, unsigned long);
+int hostCount(const char *);
+
 
 int main (int argc, char *argv[])
 {
-    struct in_addr net_mask, net_ip;
+    unsigned long net_mask, net_ip;
+    int count = 0; //How many host?
 
     //Check if the user entered the right number of input
     if(argc != 3)
@@ -23,11 +27,9 @@ int main (int argc, char *argv[])
         exit(1);
     }
 
-    printf("Test.. Mask: %d",isValidMask(argv[1]));
     int validMask = isValidMask(argv[1]);
     int validIP = isValidIP(argv[2]);
-    printf("MASK: %d IP: %d\n", validMask, validIP);
-/*
+
     if(validMask == 0 && validIP == 0)
     {
         fprintf(stderr, "Invalid subnet mask and IP\n");
@@ -43,9 +45,15 @@ int main (int argc, char *argv[])
         fprintf(stderr, "Invalid IP\n");
         return -1;
     }
-    else
-        printf("Valid Input... MASK: %d IP: %d\n", validMask, validIP);  */
-    printf("MASK: %d IP: %d\n", validMask, validIP);
+    printf("Valid Input... MASK: %d IP: %d\n", validMask, validIP);
+
+    net_mask= inet_addr(argv[1]);       //Convert dotted decimal subnet mask to binary
+    net_ip = inet_addr(argv[2]);        //Convert dotted decimal network/IP addr to binary
+    count = hostCount(argv[1]);
+    printf("Network Address: %s\n", networkAddr(net_mask, net_ip));
+    printf("Broadcast Address: %s\n", broadcastAddr(net_mask, net_ip));
+    printf("Number of Host: %d\n", count);
+
     return 0;
 }
 
@@ -76,10 +84,8 @@ bool isValidMask(const char *ptr2mask)
     subnet_mask = inet_addr(ptr2mask);       //Convert dotted decimal subnet mask to network byte
     mask = inet_aton(ptr2mask, &netmask);
     net_mask = ntohl(netmask.s_addr);       //Network byte to long Host byte order
-    printf("HEX: %x\n", net_mask );
+    //printf("DEC: %d\n", -(net_mask));
     printf("Subnet mask in host byte/decimal: %lu\n", net_mask);
-    printf("Before for loop\n");
-
     for(i = -1; i > 0; i--)
     {
         if(-(i & -i) == i && net_mask == i)
@@ -91,14 +97,44 @@ bool isValidMask(const char *ptr2mask)
     return ans;
 }
 
+/*Do a bitwise AND of the subnet mask and network/IP address to find the network address.
+This may seems redundant at first, but user cant't be trusted to input a valid network address.
+Thus, we calcualte the network address and work with the result.
+*/
 
 //Convert binary IP address to dotted decimal
 //**This will come in handy later**
-void dotted_decimal(uint32_t subnet, uint32_t addr)
+const char *networkAddr(unsigned long subnet, unsigned long addr)
 {
     struct in_addr* ip;
-    uint32_t bin_ip;
+    unsigned long bin_ip;
     bin_ip = (addr & subnet);	//Bitwise AND operation of network addr and subnet mask
     ip = (struct in_addr *)&bin_ip;
     printf("The network address in dotted decimal: %s\n", inet_ntoa(*ip));
+    return (inet_ntoa(*ip));
+}
+
+/*Do a bitwise OR of the NOT(subnet mask) and network/IP address to find the network address.
+Thus, we calculate the broadcast address.
+*/
+const char *broadcastAddr(unsigned long subnet, unsigned long addr)
+{
+    struct in_addr* ip;
+    unsigned long bin_ip;
+    bin_ip = (addr | ~subnet);	            //Bitwise OR operation of network addr and subnet mask
+    ip = (struct in_addr *)&bin_ip;
+    printf("The broadcast address in dotted decimal: %s\n", inet_ntoa(*ip));
+    return (inet_ntoa(*ip));
+}
+
+//Calculate the number of host using the subnet mask
+int hostCount(const char *ptr2mask)
+{
+    unsigned long net_mask, mask, subnet_mask;
+    unsigned int i, ans = 0;
+    struct in_addr netmask;
+    subnet_mask = inet_addr(ptr2mask);       //Convert dotted decimal subnet mask to network byte
+    mask = inet_aton(ptr2mask, &netmask);
+    net_mask = ntohl(netmask.s_addr);       //Network byte to long Host byte order
+    return (-(net_mask));
 }
