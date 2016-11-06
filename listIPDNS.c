@@ -13,6 +13,7 @@ bool isValidMask(const char *);
 const char *networkAddr(unsigned long, unsigned long);
 const char *broadcastAddr(unsigned long, unsigned long);
 int hostCount(const char *);
+unsigned long ipNumber(const char *);
 
 
 int main (int argc, char *argv[])
@@ -50,10 +51,52 @@ int main (int argc, char *argv[])
     net_mask= inet_addr(argv[1]);       //Convert dotted decimal subnet mask to binary
     net_ip = inet_addr(argv[2]);        //Convert dotted decimal network/IP addr to binary
     count = hostCount(argv[1]);
+
+    //Get the IP number of the network address, this is the "first" host in the network
+    unsigned long ip2dec = ipNumber(networkAddr(net_mask, net_ip));
+
     printf("Network Address: %s\n", networkAddr(net_mask, net_ip));
     printf("Broadcast Address: %s\n", broadcastAddr(net_mask, net_ip));
     printf("Number of Host: %d\n", count);
+    printf("IP Number: %lu\n", ip2dec);
 
+
+
+    //Iterate the number of host and convert the IP Numbers to dotted decimal
+    unsigned long hostIPnum, host, ipAddr_host;
+    char *hostAddr;
+    char *ipPtr;
+    struct in_addr* addr_ptr;
+    struct hostent *hostPtr;
+
+    //Iterate over the list of host in the subnet
+    for(int i = 0; i < count; i++)
+    {
+        //Get the dotted decimal IP for each host, starting from the network address
+        hostIPnum =  i + ip2dec;
+        host = htonl(hostIPnum);
+        addr_ptr = (struct in_addr *) &host;
+        hostAddr = inet_ntoa(*addr_ptr);
+        printf("Host[%d] IP: %s", i + 1, hostAddr);
+
+        //Get all DNS names associated with each host
+        ipAddr_host = inet_addr(hostAddr);
+        ipPtr = (char *) &ipAddr_host;
+        hostPtr = gethostbyaddr(addr_ptr, 4, AF_INET);
+
+        //Check if host is up
+        if(hostPtr == NULL)
+            printf("\tHost %s not found\n", hostAddr);
+        else
+        {
+            printf("\tOfficial name: %s\n", hostPtr->h_name);
+            while(*(hostPtr->h_aliases) != NULL)
+            {
+                printf("%\tDNS name: %s\n", *(hostPtr->h_aliases));
+                hostPtr->h_aliases++;
+            }
+        }
+    }
     return 0;
 }
 
@@ -65,6 +108,7 @@ bool isValidIP(const char *ipAddr)
 {
     struct sockaddr_in sin;
     int ans = inet_pton(AF_INET, ipAddr, &(sin.sin_addr));
+    printf("IP number: %d", ans);
     return ans != 0; //1 = TRUE, 0 = FALSE
 }
 
@@ -131,10 +175,21 @@ const char *broadcastAddr(unsigned long subnet, unsigned long addr)
 int hostCount(const char *ptr2mask)
 {
     unsigned long net_mask, mask, subnet_mask;
-    unsigned int i, ans = 0;
     struct in_addr netmask;
     subnet_mask = inet_addr(ptr2mask);       //Convert dotted decimal subnet mask to network byte
     mask = inet_aton(ptr2mask, &netmask);
     net_mask = ntohl(netmask.s_addr);       //Network byte to long Host byte order
     return (-(net_mask));
+}
+
+//Calculate the IP number from the network address
+unsigned long ipNumber(const char *ptr2ip)
+{
+    unsigned long ipNum, mask, netIP;
+    struct in_addr netAddr;
+    netIP = inet_addr(ptr2ip);            //Convert dotted decimal subnet mask to network byte
+    mask = inet_aton(ptr2ip, &netAddr);
+    ipNum = ntohl(netAddr.s_addr);       //Network byte to long Host byte order
+    printf("The IP Number from ipNumber(): %lu\n", ipNum);
+    return ipNum;
 }
