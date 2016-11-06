@@ -6,6 +6,10 @@
 #include <string.h>
 #include <stdbool.h>
 
+//ANSI escape color codes
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
 
 /* Function prototypes */
 bool isValidIP(const char *);
@@ -46,7 +50,7 @@ int main (int argc, char *argv[])
         fprintf(stderr, "Invalid IP\n");
         return -1;
     }
-    printf("Valid Input... MASK: %d IP: %d\n", validMask, validIP);
+    //printf("Valid Input... MASK: %d IP: %d\n", validMask, validIP);
 
     net_mask= inet_addr(argv[1]);       //Convert dotted decimal subnet mask to binary
     net_ip = inet_addr(argv[2]);        //Convert dotted decimal network/IP addr to binary
@@ -55,11 +59,10 @@ int main (int argc, char *argv[])
     //Get the IP number of the network address, this is the "first" host in the network
     unsigned long ip2dec = ipNumber(networkAddr(net_mask, net_ip));
 
-    printf("Network Address: %s\n", networkAddr(net_mask, net_ip));
+    printf("\nNetwork Address: %s\n", networkAddr(net_mask, net_ip));
     printf("Broadcast Address: %s\n", broadcastAddr(net_mask, net_ip));
-    printf("Number of Host: %d\n", count);
-    printf("IP Number: %lu\n", ip2dec);
-
+    printf("Number of Hosts: %d\n\n", count);
+    //printf("IP Number: %lu\n", ip2dec);
 
 
     //Iterate the number of host and convert the IP Numbers to dotted decimal
@@ -86,17 +89,18 @@ int main (int argc, char *argv[])
 
         //Check if host is up
         if(hostPtr == NULL)
-            printf("\tHost %s not found\n", hostAddr);
+            printf("\tHost [%s not found\n", hostAddr);
         else
         {
-            printf("\tOfficial name: %s\n", hostPtr->h_name);
+            printf("\t"ANSI_COLOR_CYAN "Official name: " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET"\n", hostPtr->h_name);
             while(*(hostPtr->h_aliases) != NULL)
             {
-                printf("%\tDNS name: %s\n", *(hostPtr->h_aliases));
+                printf("%\nDNS name: %s\n", *(hostPtr->h_aliases));
                 hostPtr->h_aliases++;
             }
         }
     }
+    printf("\n");
     return 0;
 }
 
@@ -108,7 +112,7 @@ bool isValidIP(const char *ipAddr)
 {
     struct sockaddr_in sin;
     int ans = inet_pton(AF_INET, ipAddr, &(sin.sin_addr));
-    printf("IP number: %d", ans);
+    //printf("True = 1, False = 0: %d\n", ans);
     return ans != 0; //1 = TRUE, 0 = FALSE
 }
 
@@ -129,10 +133,14 @@ bool isValidMask(const char *ptr2mask)
     mask = inet_aton(ptr2mask, &netmask);
     net_mask = ntohl(netmask.s_addr);       //Network byte to long Host byte order
     //printf("DEC: %d\n", -(net_mask));
-    printf("Subnet mask in host byte/decimal: %lu\n", net_mask);
+    //printf("Subnet mask in host byte/decimal: %lu\n", net_mask);
+
+    /*Compute all valid subnet mask in decimal and compare to netmask supplied by user
+      return 1 if there is a match or 0 if it is invalid(no match)
+     */
     for(i = -1; i > 0; i--)
     {
-        if(-(i & -i) == i && net_mask == i)
+        if(-(i & -i) == i && net_mask == i)     //compare the subnet number and user input
         {
             ans = 1;
             break;
@@ -154,7 +162,7 @@ const char *networkAddr(unsigned long subnet, unsigned long addr)
     unsigned long bin_ip;
     bin_ip = (addr & subnet);	//Bitwise AND operation of network addr and subnet mask
     ip = (struct in_addr *)&bin_ip;
-    printf("The network address in dotted decimal: %s\n", inet_ntoa(*ip));
+    //printf("The network address in dotted decimal: %s\n", inet_ntoa(*ip));
     return (inet_ntoa(*ip));
 }
 
@@ -167,7 +175,7 @@ const char *broadcastAddr(unsigned long subnet, unsigned long addr)
     unsigned long bin_ip;
     bin_ip = (addr | ~subnet);	            //Bitwise OR operation of network addr and subnet mask
     ip = (struct in_addr *)&bin_ip;
-    printf("The broadcast address in dotted decimal: %s\n", inet_ntoa(*ip));
+    //printf("The broadcast address in dotted decimal: %s\n", inet_ntoa(*ip));
     return (inet_ntoa(*ip));
 }
 
@@ -190,6 +198,6 @@ unsigned long ipNumber(const char *ptr2ip)
     netIP = inet_addr(ptr2ip);            //Convert dotted decimal subnet mask to network byte
     mask = inet_aton(ptr2ip, &netAddr);
     ipNum = ntohl(netAddr.s_addr);       //Network byte to long Host byte order
-    printf("The IP Number from ipNumber(): %lu\n", ipNum);
+    //printf("The IP Number from ipNumber(): %lu\n", ipNum);
     return ipNum;
 }
