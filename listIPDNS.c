@@ -77,14 +77,14 @@ int main (int argc, char *argv[])
     struct hostent *hostPtr;
 
     //Iterate over the list of host in the subnet
-    for(int i = 0; i < count; i++)
+    for(int i = 1; i < count - 1; i++)
     {
         //Get the dotted decimal IP for each host, starting from the network address
         hostIPnum =  i + ip2dec;
         host = htonl(hostIPnum);
         addr_ptr = (struct in_addr *) &host;
         hostAddr = inet_ntoa(*addr_ptr);
-        printf("Host[%d] IP: %s", i + 1, hostAddr);
+        printf("Host[%d]: %s", i, hostAddr);
 
         //Get all DNS names associated with each host
         ipAddr_host = inet_addr(hostAddr);
@@ -93,7 +93,7 @@ int main (int argc, char *argv[])
 
         //Check if host is up
         if(hostPtr == NULL)
-            printf("\tHost [%s not found\n", hostAddr);
+            printf("\tHost [%s] not found\n", hostAddr);
         else
         {
             printf("\t"ANSI_COLOR_CYAN "Official name: " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET"\n", hostPtr->h_name);
