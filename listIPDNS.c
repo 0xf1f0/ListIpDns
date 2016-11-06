@@ -1,3 +1,7 @@
+/*  This program prints list all host in a given subnet and checks if the hosts are up
+    Usage: ./listIPDNS subnet_mask Network_address
+*/
+
 #include <stdio.h>
 #include <netdb.h>
 #include <sys/socket.h>
