@@ -65,7 +65,7 @@ int main (int argc, char *argv[])
 
     printf("\nNetwork Address: %s\n", networkAddr(net_mask, net_ip));
     printf("Broadcast Address: %s\n", broadcastAddr(net_mask, net_ip));
-    printf("Number of Hosts: %d\n\n", count);
+    printf("Number of Hosts: %d\n\n", count - 2);   //subtract(network + broadcast) from host count
     //printf("IP Number: %lu\n", ip2dec);
 
 
@@ -96,7 +96,7 @@ int main (int argc, char *argv[])
             printf("\tHost [%s] not found\n", hostAddr);
         else
         {
-            printf("\t"ANSI_COLOR_CYAN "Official name: " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET"\n", hostPtr->h_name);
+            printf("\t"ANSI_COLOR_CYAN "DNS name: " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET"\n", hostPtr->h_name);
             while(*(hostPtr->h_aliases) != NULL)
             {
                 printf("%\nDNS name: %s\n", *(hostPtr->h_aliases));
