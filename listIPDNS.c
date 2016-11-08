@@ -12,8 +12,10 @@
 
 //ANSI escape color codes
 #define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_RED     "\x1B[31m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
 
 /* Function prototypes */
 bool isValidIP(const char *);
@@ -42,17 +44,17 @@ int main (int argc, char *argv[])
     if(validMask == 0 && validIP == 0)
     {
         fprintf(stderr, "Invalid subnet mask and IP\n");
-        return -1;
+        exit(1);
     }
     else if(validMask == 0 && validIP == 1)
     {
         fprintf(stderr, "Invalid subnet mask\n");
-        return -1;
+        exit(1);
     }
     else if(validMask == 1 && validIP == 0)
     {
         fprintf(stderr, "Invalid IP\n");
-        return -1;
+        exit(1);
     }
     //printf("Valid Input... MASK: %d IP: %d\n", validMask, validIP);
 
@@ -63,9 +65,9 @@ int main (int argc, char *argv[])
     //Get the IP number of the network address, this is the "first" host in the network
     unsigned long ip2dec = ipNumber(networkAddr(net_mask, net_ip));
 
-    printf("\nNetwork Address: %s\n", networkAddr(net_mask, net_ip));
-    printf("Broadcast Address: %s\n", broadcastAddr(net_mask, net_ip));
-    printf("Number of Hosts: %d\n\n", count - 2);   //subtract(network + broadcast) from host count
+    //printf("\nNetwork Address: %s\n", networkAddr(net_mask, net_ip));
+    //printf("Broadcast Address: %s\n", broadcastAddr(net_mask, net_ip));
+    //printf("Number of Hosts: %d\n\n", count);   //(network + broadcast) + nodes =  count
     //printf("IP Number: %lu\n", ip2dec);
 
 
@@ -73,18 +75,21 @@ int main (int argc, char *argv[])
     unsigned long hostIPnum, host, ipAddr_host;
     char *hostAddr;
     char *ipPtr;
+    int i;
     struct in_addr* addr_ptr;
     struct hostent *hostPtr;
 
+    printf("\n");
+
     //Iterate over the list of host in the subnet
-    for(int i = 1; i < count - 1; i++)
+    for(i = 0; i < count; i++)
     {
         //Get the dotted decimal IP for each host, starting from the network address
         hostIPnum =  i + ip2dec;
         host = htonl(hostIPnum);
         addr_ptr = (struct in_addr *) &host;
         hostAddr = inet_ntoa(*addr_ptr);
-        printf("Host[%d]: %s", i, hostAddr);
+        printf("Host[%d]: %s", i + 1, hostAddr);
 
         //Get all DNS names associated with each host
         ipAddr_host = inet_addr(hostAddr);
@@ -96,12 +101,7 @@ int main (int argc, char *argv[])
             printf("\tHost [%s] not found\n", hostAddr);
         else
         {
-            printf("\t"ANSI_COLOR_CYAN "DNS name: " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET"\n", hostPtr->h_name);
-            while(*(hostPtr->h_aliases) != NULL)
-            {
-                printf("%\nDNS name: %s\n", *(hostPtr->h_aliases));
-                hostPtr->h_aliases++;
-            }
+            printf("\t"ANSI_COLOR_RED "DNS Name: " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET"\n", hostPtr->h_name);
         }
     }
     printf("\n");

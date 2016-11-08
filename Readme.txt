@@ -1,5 +1,6 @@
 This program prints list all host in a given subnet and checks if the hosts are up
-    Usage: ./listIPDNS subnet_mask network_address
+    Usage:	./listIPDNS subnet_mask network_address
+			./listIPDNS 255.255.255.240 216.58.194.36
 subnet_mask is the subnet mask
 network_address is the network address or IP address
 
@@ -21,7 +22,8 @@ If the network_address and subnet_mask are valid:
 	Broadcast address is calculated by doing:
 		Bitwise OR of the network and NOT(subnet_mask)
 	
-	Convert the subnet_mask from unsigned long to a decimal and multiply the result by -1, this will give us the number of host in the given subnet
+	Convert the subnet_mask from unsigned long to a decimal and multiply the result by -1,
+	this will give us the number of host in the given subnet
 	
 	Convert the network_address from dotted decimal to network byte long
 	Convert the network byte to host byte long; this is the network number
@@ -31,14 +33,16 @@ If the network_address and subnet_mask are valid:
 	Each dotted decimal is the IP of the host on that particular subnet
 	Display all the IP addressess
 	Check if the host is avalaible 
-		-Display the official host name
+		-Display the DNS name
 		-Check and display other DNS name associated with the host's IP address
 	Display an error message if the host is down
 
 	
 What works?
 	Everything
-		-Network Address
-		-Broadcast Adress
+		-Validate subnet_mask
+			-It takes about 10secs to display error message when invalid subnet_mask is entered
+			-This is because the program calculates(internally) 32 possible subnet masks and compare them to user input
+		-Validate network_address/IP
 		-Number of host in the subnet
-		-A listing of all host's IP addresses and their hostname/official name
+		-A listing of all hosts' IP addresses and their DNS name
