@@ -1,4 +1,4 @@
-#This program prints list all host in a given subnet and checks if the hosts are up
+This program prints list all host in a given subnet and checks if the hosts are up
     Usage:	./listIPDNS subnet_mask network_address
 			./listIPDNS 255.255.255.240 216.58.194.36
 subnet_mask is the subnet mask
